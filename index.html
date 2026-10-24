@@ -1,0 +1,1295 @@
+<!DOCTYPE html>
+<html lang="fr" class="dark scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trafic Alerte v63 — Système Global Multilingue & Routage Réel</title>
+    <meta name="description" content="Système de routage mondial, trafic réel dynamique, alertes radars et géolocalisation en temps réel.">
+    
+    <!-- Balise de vérification Google Search Console -->
+    <meta name="google-site-verification" content="HUnEyJRyYf0WJwbXhtIYoLnZprXHcPb2ltZisy7ilcA" />
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0f9ff',
+                            500: '#0284c7',
+                            600: '#0369a1',
+                            900: '#0c4a6e',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Leaflet CSS & JS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&family=Orbitron:wght@600;800;900&family=Noto+Sans+Arabic:wght@400;700;900&display=swap');
+
+        body {
+            font-family: 'Inter', 'Noto Sans Arabic', system-ui, sans-serif;
+            transition: background-color 0.2s ease, color 0.2s ease;
+        }
+
+        .font-orbitron { font-family: 'Orbitron', 'Inter', sans-serif; }
+
+        /* MODE NUIT (DARK) */
+        .dark body { background-color: #090d16; color: #f8fafc; }
+        .dark .glass-card { background: #111827; border: 1px solid #1f2937; }
+        .dark .glass-card-active { background: #1e293b; border: 2px solid #38bdf8; box-shadow: 0 0 20px rgba(56, 189, 248, 0.25); }
+        .dark .text-main-title { color: #ffffff !important; }
+        .dark .text-sub-title { color: #38bdf8 !important; }
+        .dark .text-body-p { color: #cbd5e1 !important; }
+        .dark .input-box { background-color: #0f172a; color: #ffffff; border-color: #334155; }
+
+        /* MODE JOUR (LIGHT) */
+        body:not(.dark) { background-color: #f1f5f9; color: #0f172a; }
+        body:not(.dark) .glass-card { background: #ffffff; border: 1px solid #cbd5e1; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05); }
+        body:not(.dark) .glass-card-active { background: #ffffff; border: 2px solid #0284c7; box-shadow: 0 8px 20px rgba(2, 132, 199, 0.15); }
+        body:not(.dark) .text-main-title { color: #0f172a !important; }
+        body:not(.dark) .text-sub-title { color: #0284c7 !important; }
+        body:not(.dark) .text-body-p { color: #334155 !important; }
+        body:not(.dark) .input-box { background-color: #ffffff; color: #0f172a; border-color: #94a3b8; }
+
+        #map, #routeMap, #radarMap {
+            width: 100%;
+            height: 480px;
+            border-radius: 1rem;
+            z-index: 1;
+            cursor: crosshair;
+        }
+
+        @keyframes alertFlash {
+            0%, 100% { background-color: rgba(225, 29, 72, 0.2); border-color: #e11d48; }
+            50% { background-color: rgba(225, 29, 72, 0.7); border-color: #fda4af; }
+        }
+        .alert-active { animation: alertFlash 0.8s ease-in-out infinite; }
+
+        .car-sim-icon { font-size: 28px; filter: drop-shadow(0px 2px 5px rgba(0,0,0,0.5)); transition: all 0.2s linear; }
+        .arrow-marker-icon { font-size: 30px; color: #38bdf8; filter: drop-shadow(0 0 10px rgba(56, 189, 248, 0.9)); }
+
+        [dir="rtl"] .text-right-rtl { text-align: right; }
+        [dir="rtl"] .flex-row-rtl { flex-direction: row-reverse; }
+    </style>
+
+    <!-- Code Google AdSense Global -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3266873353292561"
+         crossorigin="anonymous"></script>
+</head>
+<body class="min-h-screen flex flex-col justify-between selection:bg-sky-500 selection:text-white">
+
+    <!-- BARRE DE NAVIGATION -->
+    <nav class="sticky top-0 z-50 bg-white dark:bg-slate-900 border-b border-slate-300 dark:border-slate-800 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-20">
+                
+                <!-- Logo -->
+                <a href="javascript:void(0)" onclick="GlobalCore.switchTab(1)" class="flex items-center space-x-3 group">
+                    <div class="w-11 h-11 rounded-2xl bg-sky-600 flex items-center justify-center text-white shadow-md">
+                        <i data-lucide="compass" class="w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <span class="text-2xl font-black font-orbitron tracking-tight text-main-title">TRAFIC<span class="text-sky-600 dark:text-sky-400">ALERTE</span></span>
+                        <p class="text-[10px] uppercase font-bold text-slate-500 dark:text-slate-400 tracking-wider" id="txt-subhead">Noyau v63 — Multilingue Intégral & Banque Mondiale</p>
+                    </div>
+                </a>
+
+                <!-- Onglets Navigation -->
+                <div class="hidden lg:flex space-x-1 bg-slate-100 dark:bg-slate-950 p-1.5 rounded-2xl border border-slate-300 dark:border-slate-800 text-sm font-bold">
+                    <button onclick="GlobalCore.switchTab(1)" id="nav-tab-1" class="px-4 py-2 rounded-xl text-sky-600 dark:text-sky-400 bg-white dark:bg-slate-800 shadow-sm">
+                        <i data-lucide="layout-grid" class="w-4 h-4 inline mr-1"></i> <span id="nav-1">Présentation</span>
+                    </button>
+                    <button onclick="GlobalCore.switchTab(2)" id="nav-tab-2" class="px-4 py-2 rounded-xl text-slate-600 dark:text-slate-300 hover:text-sky-600">
+                        <i data-lucide="map-pin" class="w-4 h-4 inline mr-1"></i> <span id="nav-2">Localisation</span>
+                    </button>
+                    <button onclick="GlobalCore.switchTab(3)" id="nav-tab-3" class="px-4 py-2 rounded-xl text-slate-600 dark:text-slate-300 hover:text-sky-600">
+                        <i data-lucide="navigation" class="w-4 h-4 inline mr-1"></i> <span id="nav-3">Routage Intelligente</span>
+                    </button>
+                    <button onclick="GlobalCore.switchTab(4)" id="nav-tab-4" class="px-4 py-2 rounded-xl text-slate-600 dark:text-slate-300 hover:text-sky-600">
+                        <i data-lucide="radar" class="w-4 h-4 inline mr-1"></i> <span id="nav-4">Scanner Radar</span>
+                    </button>
+                </div>
+
+                <!-- Action Controls (Langue & Thème) -->
+                <div class="flex items-center space-x-2">
+                    <select id="langSelect" onchange="GlobalCore.setLanguage(this.value)" class="px-3 py-2 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-800 dark:text-slate-100 font-bold text-xs border border-slate-300 dark:border-slate-700 outline-none cursor-pointer">
+                        <option value="fr" selected>Français (FR)</option>
+                        <option value="ar">العربية (AR)</option>
+                        <option value="en">English (EN)</option>
+                        <option value="pt">Português (PT)</option>
+                        <option value="zh">中文 (ZH)</option>
+                        <option value="ja">日本語 (JA)</option>
+                        <option value="ru">Русский (RU)</option>
+                    </select>
+
+                    <button onclick="GlobalCore.toggleDayNightMode()" class="px-3.5 py-2 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-800 dark:text-slate-100 font-bold text-xs flex items-center gap-2 border border-slate-300 dark:border-slate-700">
+                        <i data-lucide="sun" class="w-4 h-4 hidden dark:block text-amber-400"></i>
+                        <i data-lucide="moon" class="w-4 h-4 block dark:hidden text-indigo-600"></i>
+                        <span id="themeLabel">Mode Nuit</span>
+                    </button>
+
+                    <button onclick="GlobalCore.initSoundAudio()" id="soundPermissionBtn" class="px-3 py-2 text-xs font-bold text-amber-800 dark:text-amber-300 bg-amber-100 dark:bg-amber-950/80 border border-amber-300 dark:border-amber-700 rounded-xl">
+                        <i data-lucide="volume-2" class="w-4 h-4 inline mr-1"></i> <span id="txt-audio">Audio Actif</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 📢 ESPACE PUBLICITAIRE HAUT (GOOGLE ADSENSE) -->
+    <div class="max-w-6xl mx-auto px-4 mt-6 text-center">
+        <ins class="adsbygoogle"
+             style="display:block"
+             data-ad-client="ca-pub-3266873353292561"
+             data-ad-slot="auto"
+             data-ad-format="auto"
+             data-full-width-responsive="true"></ins>
+        <script>
+             (adsbygoogle = window.adsbygoogle || []).push({});
+        </script>
+    </div>
+
+    <!-- MAIN CONTAINER -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow">
+
+        <!-- ONGLET 1 : PRÉSENTATION -->
+        <section id="content-tab-1" class="space-y-8">
+            <div class="glass-card p-8 sm:p-12 rounded-3xl shadow-lg">
+                <div class="grid lg:grid-cols-12 gap-8 items-center">
+                    <div class="lg:col-span-7 space-y-6">
+                        <span class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider bg-sky-100 dark:bg-sky-950 text-sky-700 dark:text-sky-300 border border-sky-300 dark:border-sky-800" id="badge-version">
+                            Architecture Systémique v63
+                        </span>
+
+                        <h1 class="text-3xl sm:text-5xl font-black font-orbitron text-main-title leading-tight" id="hero-title">
+                            Système de Routage Mondial <br><span class="text-sub-title">&amp; Trafic Réel Dynamique</span>
+                        </h1>
+
+                        <p class="text-body-p text-base leading-relaxed" id="hero-desc">
+                            Incorpore la totalité des pays triés par ordre alphabétique par continent, la traduction intégrale (FR, AR, EN, PT, ZH, JA, RU), le tracé réel OSRM et la possibilité de sélectionner l'arrivée directement sur la carte.
+                        </p>
+                    </div>
+
+                    <div class="lg:col-span-5 flex justify-center">
+                        <div class="w-64 h-64 rounded-full bg-sky-600 flex flex-col items-center justify-center text-white shadow-xl text-center p-4">
+                            <i data-lucide="globe-2" class="w-16 h-16 mb-2"></i>
+                            <span class="font-orbitron font-bold text-lg" id="circle-title">BANQUE MONDIALE</span>
+                            <span class="text-xs opacity-90" id="circle-sub">7 Langues &amp; Trafic 5 Min</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-6">
+                <button onclick="GlobalCore.switchTab(2)" class="glass-card p-6 rounded-2xl text-left hover:border-sky-500 transition">
+                    <div class="w-12 h-12 rounded-xl bg-sky-100 dark:bg-sky-950 text-sky-600 dark:text-sky-400 flex items-center justify-center mb-4">
+                        <i data-lucide="map-pin" class="w-6 h-6"></i>
+                    </div>
+                    <h3 class="text-lg font-bold font-orbitron text-main-title mb-1" id="card1-t">1. Localisation</h3>
+                    <p class="text-body-p text-xs" id="card1-d">Suivi GPS matériel.</p>
+                </button>
+
+                <button onclick="GlobalCore.switchTab(3)" class="glass-card p-6 rounded-2xl text-left hover:border-sky-500 transition">
+                    <div class="w-12 h-12 rounded-xl bg-indigo-100 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 flex items-center justify-center mb-4">
+                        <i data-lucide="navigation" class="w-6 h-6"></i>
+                    </div>
+                    <h3 class="text-lg font-bold font-orbitron text-main-title mb-1" id="card2-t">2. Routage Intelligente</h3>
+                    <p class="text-body-p text-xs" id="card2-d">Tous pays &amp; Trafic 5 min.</p>
+                </button>
+
+                <button onclick="GlobalCore.switchTab(4)" class="glass-card p-6 rounded-2xl text-left hover:border-sky-500 transition">
+                    <div class="w-12 h-12 rounded-xl bg-rose-100 dark:bg-rose-950 text-rose-600 dark:text-rose-400 flex items-center justify-center mb-4">
+                        <i data-lucide="radar" class="w-6 h-6"></i>
+                    </div>
+                    <h3 class="text-lg font-bold font-orbitron text-main-title mb-1" id="card3-t">3. Scanner Radar</h3>
+                    <p class="text-body-p text-xs" id="card3-d">Alerte sonore de vitesse.</p>
+                </button>
+            </div>
+        </section>
+
+        <!-- ONGLET 2 : LOCALISATION -->
+        <section id="content-tab-2" class="space-y-6 hidden">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div>
+                    <h2 class="text-2xl sm:text-3xl font-black font-orbitron text-main-title flex items-center gap-3">
+                        <i data-lucide="map-pin" class="w-7 h-7 text-sky-600 dark:text-sky-400"></i> <span id="loc-title">Localisation GPS</span>
+                    </h2>
+                    <p class="text-body-p text-xs" id="loc-sub">Positionnement synchronisé matériel.</p>
+                </div>
+                <button onclick="GlobalCore.startLiveGPSWatch()" class="px-4 py-2.5 bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs rounded-xl shadow transition">
+                    <i data-lucide="crosshair" class="w-4 h-4 inline mr-1"></i> <span id="btn-gps-act">Activer Suivi Réel GPS</span>
+                </button>
+            </div>
+
+            <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="glass-card p-5 rounded-2xl">
+                    <span class="text-xs text-slate-500 dark:text-slate-400 uppercase font-bold" id="lbl-lat">Latitude</span>
+                    <p id="gps-lat" class="text-xl font-black font-orbitron text-sky-600 dark:text-sky-400 mt-1">36.88400 N</p>
+                </div>
+                <div class="glass-card p-5 rounded-2xl">
+                    <span class="text-xs text-slate-500 dark:text-slate-400 uppercase font-bold" id="lbl-lng">Longitude</span>
+                    <p id="gps-lng" class="text-xl font-black font-orbitron text-sky-600 dark:text-sky-400 mt-1">10.31400 E</p>
+                </div>
+                <div class="glass-card p-5 rounded-2xl">
+                    <span class="text-xs text-slate-500 dark:text-slate-400 uppercase font-bold" id="lbl-zone">Zone Actuelle</span>
+                    <p id="gps-zone" class="text-xl font-black font-orbitron text-emerald-600 dark:text-emerald-400 mt-1">Zone Urbaine (&lt;50km/h)</p>
+                </div>
+                <div class="glass-card p-5 rounded-2xl">
+                    <span class="text-xs text-slate-500 dark:text-slate-400 uppercase font-bold" id="lbl-mode">Mode GPS</span>
+                    <p id="gps-acc" class="text-xl font-black font-orbitron text-indigo-600 dark:text-indigo-400 mt-1">Immobile / Bureau</p>
+                </div>
+            </div>
+
+            <div class="glass-card p-4 rounded-3xl">
+                <div id="map"></div>
+            </div>
+        </section>
+
+        <!-- ONGLET 3 : ROUTAGE MONDIAL & TRAFIC RÉEL -->
+        <section id="content-tab-3" class="space-y-6 hidden">
+            <div>
+                <h2 class="text-2xl sm:text-3xl font-black font-orbitron text-main-title flex items-center gap-3">
+                    <i data-lucide="navigation" class="w-7 h-7 text-indigo-600 dark:text-indigo-400"></i> <span id="route-tab-title">Module de Routage Mondial &amp; Trafic</span>
+                </h2>
+                <p class="text-body-p text-xs mt-1" id="route-tab-sub">Sélectionnez par Continent / Pays / Villes ou directement par clic sur la carte :</p>
+            </div>
+
+            <div class="glass-card p-6 rounded-3xl space-y-5">
+                <div class="grid md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-2 flex items-center gap-1.5">
+                            <span class="w-5 h-5 rounded-full bg-sky-600 text-white flex items-center justify-center text-[10px]">1</span>
+                            <span id="lbl-continent">Choix du Continent</span>
+                        </label>
+                        <select id="continentSelect" onchange="GlobalCore.onContinentChange()" class="input-box w-full px-4 py-3 rounded-xl font-bold text-sm outline-none cursor-pointer">
+                            <option value="Africa" selected>Afrique</option>
+                            <option value="Europe">Europe</option>
+                            <option value="Asia">Asie</option>
+                            <option value="NorthAmerica">Amérique du Nord</option>
+                            <option value="SouthAmerica">Amérique du Sud</option>
+                            <option value="Oceania">Océanie</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-2 flex items-center gap-1.5">
+                            <span class="w-5 h-5 rounded-full bg-sky-600 text-white flex items-center justify-center text-[10px]">2</span>
+                            <span id="lbl-country">Choix du Pays</span>
+                        </label>
+                        <select id="countrySelect" onchange="GlobalCore.onCountryChange()" class="input-box w-full px-4 py-3 rounded-xl font-bold text-sm outline-none cursor-pointer">
+                            <!-- Rempli dynamiquement -->
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid md:grid-cols-2 gap-4">
+                    <div>
+                        <div class="flex justify-between items-center mb-2">
+                            <label class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase flex items-center gap-1.5">
+                                <span class="w-5 h-5 rounded-full bg-sky-600 text-white flex items-center justify-center text-[10px]">3</span>
+                                <span id="lbl-start">Point de Départ</span>
+                            </label>
+                            <span id="startModeBadge" class="text-[10px] font-bold px-2 py-0.5 rounded bg-sky-100 text-sky-700 dark:bg-sky-950 dark:text-sky-300">Mode Liste</span>
+                        </div>
+                        <div class="flex gap-2">
+                            <select id="startLocationSelect" onchange="GlobalCore.onStartSelectChange(this.value)" class="input-box w-full px-4 py-3 rounded-xl font-semibold text-sm outline-none cursor-pointer">
+                                <!-- Rempli dynamiquement -->
+                            </select>
+                            <button onclick="GlobalCore.useCurrentLocAsStart()" class="px-3.5 py-3 font-bold text-xs text-sky-600 dark:text-sky-400 bg-sky-100 dark:bg-sky-950 rounded-xl border border-sky-300 dark:border-sky-800 whitespace-nowrap">
+                                📍 Auto GPS
+                            </button>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="flex justify-between items-center mb-2">
+                            <label class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase flex items-center gap-1.5">
+                                <span class="w-5 h-5 rounded-full bg-sky-600 text-white flex items-center justify-center text-[10px]">4</span>
+                                <span id="lbl-end">Point d'Arrivée</span>
+                            </label>
+                            <span id="endModeBadge" class="text-[10px] font-bold px-2 py-0.5 rounded bg-sky-100 text-sky-700 dark:bg-sky-950 dark:text-sky-300">Mode Liste</span>
+                        </div>
+                        <div class="flex gap-2">
+                            <select id="endLocationSelect" onchange="GlobalCore.onEndSelectChange(this.value)" class="input-box w-full px-4 py-3 rounded-xl font-semibold text-sm outline-none cursor-pointer">
+                                <!-- Rempli dynamiquement -->
+                            </select>
+                            <button onclick="GlobalCore.activateMapClickMode()" class="px-3.5 py-3 font-bold text-xs text-amber-600 dark:text-amber-400 bg-amber-100 dark:bg-amber-950 rounded-xl border border-amber-300 dark:border-amber-800 whitespace-nowrap">
+                                🖱️ Clic Carte
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="routeSummaryBanner" class="p-4 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-800 flex flex-col sm:flex-row justify-between items-center gap-3">
+                    <div class="flex items-center gap-2 text-xs font-bold text-main-title w-full sm:w-auto">
+                        <i data-lucide="map-pin" class="w-4 h-4 text-emerald-500 shrink-0"></i>
+                        <span class="text-slate-400" id="txt-summary-start">Départ:</span>
+                        <span id="displayStartText" class="text-emerald-600 dark:text-emerald-400 font-orbitron">Tunis (Capitale)</span>
+                    </div>
+
+                    <div class="flex items-center gap-2 text-xs font-bold text-main-title w-full sm:w-auto">
+                        <i data-lucide="navigation" class="w-4 h-4 text-sky-500 shrink-0"></i>
+                        <span class="text-slate-400" id="txt-summary-end">Arrivée:</span>
+                        <span id="displayEndText" class="text-sky-600 dark:text-sky-400 font-orbitron">Monastir</span>
+                    </div>
+
+                    <button onclick="GlobalCore.resetToDropdownMode()" class="px-3 py-1.5 bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs rounded-lg shadow transition whitespace-nowrap">
+                        <i data-lucide="rotate-ccw" class="w-3.5 h-3.5 inline mr-1"></i> <span id="btn-reactivate">Réactiver Sélecteurs</span>
+                    </button>
+                </div>
+
+                <button onclick="GlobalCore.calculateTripleRoutes()" class="w-full py-4 bg-sky-600 hover:bg-sky-700 text-white font-black font-orbitron rounded-xl shadow-lg transition flex items-center justify-center gap-2 text-sm cursor-pointer">
+                    <i data-lucide="layers" class="w-5 h-5"></i> <span id="btn-generate">Générer les 03 Itinéraires Détaillés (OSRM Real Route)</span>
+                </button>
+            </div>
+
+            <!-- 📢 ESPACE PUBLICITAIRE MILIEU (GOOGLE ADSENSE) -->
+            <div class="my-6 text-center">
+                <ins class="adsbygoogle"
+                     style="display:block"
+                     data-ad-client="ca-pub-3266873353292561"
+                     data-ad-slot="auto"
+                     data-ad-format="auto"
+                     data-full-width-responsive="true"></ins>
+                <script>
+                     (adsbygoogle = window.adsbygoogle || []).push({});
+                </script>
+            </div>
+
+            <div class="bg-slate-900 text-white p-3.5 rounded-2xl flex justify-between items-center px-6 border border-slate-800 shadow">
+                <div class="flex items-center gap-3 text-xs font-bold">
+                    <i data-lucide="refresh-cw" class="w-4 h-4 text-sky-400 animate-spin"></i>
+                    <span id="txt-timer-label">Prochaine mise à jour du trafic réel :</span>
+                </div>
+                <span id="trafficTimerDisplay" class="font-orbitron font-black text-sky-400 text-base">05:00</span>
+            </div>
+
+            <div id="routesResults" class="grid md:grid-cols-3 gap-6">
+                <!-- Route 1 -->
+                <div onclick="GlobalCore.selectRouteCard(1)" id="route-card-1" class="glass-card glass-card-active p-6 rounded-3xl cursor-pointer transition">
+                    <div class="flex justify-between items-center mb-3">
+                        <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-400" id="rt1-tag">Itinéraire #1 — Principal</span>
+                        <span id="route-dist-1" class="text-xs font-bold font-orbitron text-slate-500">-- km</span>
+                    </div>
+                    <h3 id="route-title-1" class="text-base font-black font-orbitron text-main-title mb-1">Voie Express Directe</h3>
+                    <p class="text-xs text-body-p mb-4"><span id="lbl-traffic-status-1">Trafic Global</span> : <span id="traffic-val-1" class="text-emerald-600 dark:text-emerald-400 font-bold">Fluide</span></p>
+
+                    <div class="bg-slate-100 dark:bg-slate-900 p-4 rounded-2xl text-center border border-slate-200 dark:border-slate-800">
+                        <span class="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider block" id="rt1-eta-lbl">Temps d'arrivée estimé</span>
+                        <p class="text-base font-black font-orbitron text-main-title mt-1">
+                            <span id="route-time-min-1" class="text-sky-600 dark:text-sky-400 text-xl">--</span>
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Route 2 -->
+                <div onclick="GlobalCore.selectRouteCard(2)" id="route-card-2" class="glass-card p-6 rounded-3xl cursor-pointer transition">
+                    <div class="flex justify-between items-center mb-3">
+                        <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-400" id="rt2-tag">Itinéraire #2 — Alternative</span>
+                        <span id="route-dist-2" class="text-xs font-bold font-orbitron text-slate-500">-- km</span>
+                    </div>
+                    <h3 id="route-title-2" class="text-base font-black font-orbitron text-main-title mb-1">Route Nationale</h3>
+                    <p class="text-xs text-body-p mb-4"><span id="lbl-traffic-status-2">Trafic Global</span> : <span id="traffic-val-2" class="text-amber-600 dark:text-amber-400 font-bold">Ralentissement</span></p>
+
+                    <div class="bg-slate-100 dark:bg-slate-900 p-4 rounded-2xl text-center border border-slate-200 dark:border-slate-800">
+                        <span class="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider block" id="rt2-eta-lbl">Temps d'arrivée estimé</span>
+                        <p class="text-base font-black font-orbitron text-main-title mt-1">
+                            <span id="route-time-min-2" class="text-sky-600 dark:text-sky-400 text-xl">--</span>
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Route 3 -->
+                <div onclick="GlobalCore.selectRouteCard(3)" id="route-card-3" class="glass-card p-6 rounded-3xl cursor-pointer transition">
+                    <div class="flex justify-between items-center mb-3">
+                        <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-400" id="rt3-tag">Itinéraire #3 — Évitement</span>
+                        <span id="route-dist-3" class="text-xs font-bold font-orbitron text-slate-500">-- km</span>
+                    </div>
+                    <h3 id="route-title-3" class="text-base font-black font-orbitron text-main-title mb-1">Variante Régionale</h3>
+                    <p class="text-xs text-body-p mb-4"><span id="lbl-traffic-status-3">Trafic Global</span> : <span id="traffic-val-3" class="text-indigo-600 dark:text-indigo-400 font-bold">Fluide</span></p>
+
+                    <div class="bg-slate-100 dark:bg-slate-900 p-4 rounded-2xl text-center border border-slate-200 dark:border-slate-800">
+                        <span class="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider block" id="rt3-eta-lbl">Temps d'arrivée estimé</span>
+                        <p class="text-base font-black font-orbitron text-main-title mt-1">
+                            <span id="route-time-min-3" class="text-sky-600 dark:text-sky-400 text-xl">--</span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass-card p-5 rounded-3xl space-y-4">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                    <div class="flex items-center gap-2">
+                        <span class="w-6 h-6 rounded-full bg-emerald-600 text-white flex items-center justify-center text-xs font-bold">5</span>
+                        <span class="text-sm font-bold font-orbitron text-main-title" id="map-legend">
+                            Carte Routière Réelle &amp; Suivi (Vert = Fluide | Orange = Modéré | Rouge = Dense)
+                        </span>
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                        <button onclick="GlobalCore.startVehicleSimulation()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow transition flex items-center gap-1.5">
+                            <i data-lucide="play" class="w-4 h-4"></i> <span id="btn-sim-start">Lancer la Simulation</span>
+                        </button>
+                        <button onclick="GlobalCore.stopVehicleSimulation()" class="px-3 py-2 bg-slate-700 hover:bg-slate-800 text-white font-bold text-xs rounded-xl shadow transition">
+                            <i data-lucide="square" class="w-4 h-4"></i> <span id="btn-sim-pause">Pause</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div id="routeMap"></div>
+            </div>
+        </section>
+
+        <!-- ONGLET 4 : SCANNER RADAR -->
+        <section id="content-tab-4" class="space-y-6 hidden">
+            <div>
+                <h2 class="text-2xl sm:text-3xl font-black font-orbitron text-main-title flex items-center gap-3">
+                    <i data-lucide="radar" class="w-7 h-7 text-rose-600 dark:text-rose-500"></i> <span id="radar-title">Scanner Radar &amp; Vitesse Instantanée</span>
+                </h2>
+                <p class="text-body-p text-xs mt-1" id="radar-sub">Surveillance des radars et alertes sonores de vitesse.</p>
+            </div>
+
+            <div id="radarContainer" class="glass-card p-8 rounded-3xl relative overflow-hidden transition-all duration-300">
+                <div class="grid md:grid-cols-12 gap-8 items-center">
+                    <div class="md:col-span-6 text-center border-r border-slate-200 dark:border-slate-800 pr-0 md:pr-6">
+                        <span class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest block mb-2" id="lbl-speed-inst">Vitesse Instantanée</span>
+                        <div class="inline-flex items-baseline gap-2">
+                            <span id="currentSpeedDisplay" class="text-6xl sm:text-8xl font-black font-orbitron text-sky-600 dark:text-sky-400">0</span>
+                            <span class="text-lg font-bold font-orbitron text-slate-400">km/h</span>
+                        </div>
+                    </div>
+
+                    <div class="md:col-span-6 space-y-6">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-3" id="lbl-speed-limit">Limitation de vitesse :</label>
+                            <div class="grid grid-cols-5 gap-2">
+                                <button onclick="GlobalCore.setSpeedLimit(50)" id="limit-btn-50" class="speed-limit-btn py-3 rounded-xl bg-sky-100 dark:bg-sky-950 border-2 border-sky-500 text-sky-700 dark:text-white font-black font-orbitron text-sm">50</button>
+                                <button onclick="GlobalCore.setSpeedLimit(70)" id="limit-btn-70" class="speed-limit-btn py-3 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-main-title font-black font-orbitron text-sm">70</button>
+                                <button onclick="GlobalCore.setSpeedLimit(90)" id="limit-btn-90" class="speed-limit-btn py-3 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-main-title font-black font-orbitron text-sm">90</button>
+                                <button onclick="GlobalCore.setSpeedLimit(110)" id="limit-btn-110" class="speed-limit-btn py-3 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-main-title font-black font-orbitron text-sm">110</button>
+                                <button onclick="GlobalCore.setSpeedLimit(130)" id="limit-btn-130" class="speed-limit-btn py-3 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-main-title font-black font-orbitron text-sm">130</button>
+                            </div>
+                        </div>
+
+                        <div class="bg-slate-100 dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-2">
+                            <div class="flex justify-between text-xs font-bold">
+                                <span class="text-slate-500 dark:text-slate-400" id="lbl-speed-test">Testeur de Vitesse (Simulation)</span>
+                                <span id="simSpeedVal" class="text-sky-600 dark:text-sky-400 font-orbitron">0 km/h</span>
+                            </div>
+                            <input type="range" id="speedSimulator" min="0" max="180" value="0" oninput="GlobalCore.simulatedSpeedChange(this.value)" class="w-full accent-sky-500 cursor-pointer">
+                        </div>
+                    </div>
+                </div>
+
+                <div id="alertBanner" class="mt-6 hidden p-4 bg-rose-600 text-white font-black font-orbitron text-center rounded-2xl uppercase tracking-wider text-sm animate-bounce shadow-lg">
+                    🚨 <span id="txt-radar-alert">ALERTE RADAR ! DÉPASSEMENT DE VITESSE !</span> 🚨
+                </div>
+            </div>
+
+            <div class="glass-card p-6 rounded-3xl space-y-3">
+                <div class="flex justify-between items-center">
+                    <h3 class="text-sm font-bold font-orbitron text-main-title flex items-center gap-2">
+                        <i data-lucide="globe" class="w-4 h-4 text-rose-500"></i> <span id="lbl-radar-map">Carte des Radars</span>
+                    </h3>
+                    <span id="radarDistanceBadge" class="text-xs px-3 py-1 bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-400 font-bold rounded-lg border border-rose-300 dark:border-rose-800">
+                        Prochain Radar : -- km
+                    </span>
+                </div>
+                <div id="radarMap"></div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="bg-white dark:bg-slate-950 border-t border-slate-200 dark:border-slate-800 py-6 text-center text-xs text-slate-500">
+        <div class="max-w-7xl mx-auto px-4 space-y-2">
+            <p>&copy; 2026 Trafic Alerte v63. Système Global Multilingue. | 
+               <a href="privacy.html" class="text-sky-500 hover:underline">Politique de Confidentialité</a>
+            </p>
+        </div>
+    </footer>
+
+    <!-- LOGIQUE JS DE L'APPLICATION -->
+    <script>
+        lucide.createIcons();
+
+        const GlobalCore = (() => {
+            let state = {
+                lang: 'fr',
+                userLat: 36.884,
+                userLng: 10.314,
+                userSpeed: 0,
+                currentLimit: 50,
+                audioCtx: null,
+                isAudioAllowed: false,
+                isDarkMode: true,
+                activeRoute: 1,
+                startCoords: [36.806, 10.181],
+                endCoords: [35.783, 10.833],
+                startName: "Tunis (Capitale)",
+                endName: "Monastir",
+                isMapClickMode: false,
+                routePath: [],
+                simIndex: 0,
+                simTimer: null,
+                trafficCountdown: 300,
+                trafficTimerInterval: null
+            };
+
+            let maps = { location: null, route: null, radar: null };
+            let markers = { location: null, routeSegments: [], arrow: null, carSim: null, radarPolyline: null, radarMarkers: [] };
+
+            const esriTileUrl = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}';
+
+            const translations = {
+                fr: {
+                    subhead: "Noyau v63 — Multilingue Intégral & Banque Mondiale",
+                    nav1: "Présentation", nav2: "Localisation", nav3: "Routage Intelligente", nav4: "Scanner Radar",
+                    heroTitle: "Système de Routage Mondial <br><span class='text-sub-title'>& Trafic Réel Dynamique</span>",
+                    heroDesc: "Banque mondiale complète de pays triés par ordre alphabétique, traduction intégrale des cartes et sélection directe de la destination sur la carte.",
+                    circleTitle: "BANQUE MONDIALE", circleSub: "7 Langues & Trafic 5 Min",
+                    card1t: "1. Localisation", card1d: "Suivi GPS matériel.",
+                    card2t: "2. Routage Intelligente", card2d: "Tous pays & Trafic 5 min.",
+                    card3t: "3. Scanner Radar", card3d: "Alerte sonore de vitesse.",
+                    locTitle: "Localisation GPS", locSub: "Positionnement synchronisé matériel.",
+                    btnGpsAct: "Activer Suivi Réel GPS", lblLat: "Latitude", lblLng: "Longitude", lblZone: "Zone Actuelle", lblMode: "Mode GPS",
+                    routeTabTitle: "Module de Routage Mondial & Trafic", routeTabSub: "Sélectionnez par Continent / Pays / Villes ou directement par clic sur la carte :",
+                    lblContinent: "Choix du Continent", lblCountry: "Choix du Pays", lblStart: "Point de Départ", lblEnd: "Point d'Arrivée",
+                    summaryStart: "Départ:", summaryEnd: "Arrivée:", btnReactivate: "Réactiver Sélecteurs",
+                    btnGenerate: "Générer les 03 Itinéraires Détaillés (OSRM Real Route)", timerLabel: "Prochaine mise à jour du trafic réel :",
+                    mapLegend: "Carte Routière Réelle & Suivi (Vert = Fluide | Orange = Modéré | Rouge = Dense)",
+                    btnSimStart: "Lancer la Simulation", btnSimPause: "Pause",
+                    radarTitle: "Scanner Radar & Vitesse Instantanée", radarSub: "Surveillance des radars et alertes sonores de vitesse.",
+                    lblSpeedInst: "Vitesse Instantanée", lblSpeedLimit: "Limitation de vitesse :", lblSpeedTest: "Testeur de Vitesse (Simulation)",
+                    txtRadarAlert: "ALERTE RADAR ! DÉPASSEMENT DE VITESSE !", lblRadarMap: "Carte des Radars", txtAudio: "Audio Actif",
+                    rt1Tag: "Itinéraire #1 — Principal", rt2Tag: "Itinéraire #2 — Alternative", rt3Tag: "Itinéraire #3 — Évitement",
+                    rt1Title: "Voie Express Directe", rt2Title: "Route Nationale", rt3Title: "Variante Régionale",
+                    rtTrafficLbl: "Trafic Global", rtEtaLbl: "Temps d'arrivée estimé",
+                    stFluide: "Fluide", stSlow: "Ralentissement", stDense: "Dense"
+                },
+                ar: {
+                    subhead: "النواة v63 — ترجمة شاملة وبنك دول كلي",
+                    nav1: "العرض", nav2: "الموقع", nav3: "التوجيه الذكي", nav4: "ماسح الرادار",
+                    heroTitle: "نظام التوجيه العالمي <br><span class='text-sub-title'>و حركة المرور المباشرة</span>",
+                    heroDesc: "تغطية كليّة لجميع دول العالم مرتبة أبجدياً، ترجمة كاملة للبطاقات والخريطة، مع إمكانية النقر المباشر لاختيار الوجهة.",
+                    circleTitle: "البنك العالمي", circleSub: "7 لغات وتحديث كل 5 دقائق",
+                    card1t: "1. تحديد الموقع", card1d: "تتبع عبر GPS.",
+                    card2t: "2. التوجيه الذكي", card2d: "كل الدول وتحديث المرور.",
+                    card3t: "3. ماسح الرادار", card3d: "تنبيه صوتي للسرعة.",
+                    locTitle: "تحديد الموقع GPS", locSub: "مزامنة الموقع فورياً.",
+                    btnGpsAct: "تفعيل تتبع GPS", lblLat: "خط العرض", lblLng: "خط الطول", lblZone: "المنطقة الحالية", lblMode: "وضع GPS",
+                    routeTabTitle: "وحدة التوجيه العالمي وحركة المرور", routeTabSub: "اختر حسب القارة / الدولة / المدينة أو بالنقر مباشرة على الخريطة:",
+                    lblContinent: "اختر القارة", lblCountry: "اختر الدولة", lblStart: "نقطة الانطلاق", lblEnd: "نقطة الوصول",
+                    summaryStart: "الإنطلاق:", summaryEnd: "الوصول:", btnReactivate: "إعادة تفعيل القوائم",
+                    btnGenerate: "إنشاء المسارات الثلاثة التفصيلية", timerLabel: "التحديث القادم لحركة المرور:",
+                    mapLegend: "خريطة الطرق المباشرة (أخضر = سلس | برتقالي = متوسط | أحمر = مزدحم)",
+                    btnSimStart: "بدء المحاكاة", btnSimPause: "إيقاف مؤقت",
+                    radarTitle: "ماسح الرادار والسرعة الفورية", radarSub: "مراقبة الرادارات والتنبيهات الصوتية للسرعة.",
+                    lblSpeedInst: "السرعة الفورية", lblSpeedLimit: "حد السرعة المسموح:", lblSpeedTest: "اختبار السرعة (محاكاة)",
+                    txtRadarAlert: "تنبيه رادار! تجاوزت السرعة المسموح بها!", lblRadarMap: "خريطة الرادارات", txtAudio: "الصوت مفعل",
+                    rt1Tag: "المسار #1 — الرئيسي", rt2Tag: "المسار #2 — البديل", rt3Tag: "المسار #3 — الإلتفافي",
+                    rt1Title: "طريق سيّار مباشر", rt2Title: "طريق وطنية", rt3Title: "مسار جهوي",
+                    rtTrafficLbl: "حركة المرور", rtEtaLbl: "الزمن المتوقع للوصول",
+                    stFluide: "سلسة", stSlow: "بطيئة", stDense: "مزدحمة"
+                },
+                en: {
+                    subhead: "Core v63 — Full Multilingual & Worldwide Country Bank",
+                    nav1: "Overview", nav2: "Location", nav3: "Smart Routing", nav4: "Radar Scanner",
+                    heroTitle: "Global Routing System <br><span class='text-sub-title'>& Live Real Traffic</span>",
+                    heroDesc: "Complete worldwide countries bank alphabetically sorted, full interface and cards translation, direct map destination selection.",
+                    circleTitle: "GLOBAL BANK", circleSub: "7 Languages & 5 Min Traffic",
+                    card1t: "1. Location", card1d: "Hardware GPS tracking.",
+                    card2t: "2. Smart Routing", card2d: "All countries & 5 min traffic.",
+                    card3t: "3. Radar Scanner", card3d: "Audio speed alert.",
+                    locTitle: "GPS Location", locSub: "Hardware position sync.",
+                    btnGpsAct: "Enable Live GPS", lblLat: "Latitude", lblLng: "Longitude", lblZone: "Current Zone", lblMode: "GPS Mode",
+                    routeTabTitle: "Global Routing & Traffic Module", routeTabSub: "Select by Continent / Country / Cities or click directly on the map:",
+                    lblContinent: "Select Continent", lblCountry: "Select Country", lblStart: "Starting Point", lblEnd: "Destination Point",
+                    summaryStart: "Start:", summaryEnd: "Destination:", btnReactivate: "Reactivate Selectors",
+                    btnGenerate: "Generate 03 Detailed Routes (OSRM Real Route)", timerLabel: "Next live traffic update in:",
+                    mapLegend: "Real Road Map (Green = Clear | Orange = Moderate | Red = Heavy)",
+                    btnSimStart: "Start Simulation", btnSimPause: "Pause",
+                    radarTitle: "Radar Scanner & Instant Speed", radarSub: "Speed camera monitoring and acoustic alerts.",
+                    lblSpeedInst: "Instant Speed", lblSpeedLimit: "Speed Limit:", lblSpeedTest: "Speed Simulator",
+                    txtRadarAlert: "RADAR WARNING! SPEED LIMIT EXCEEDED!", lblRadarMap: "Radar Map", txtAudio: "Audio Active",
+                    rt1Tag: "Route #1 — Main", rt2Tag: "Route #2 — Alternative", rt3Tag: "Route #3 — Bypass",
+                    rt1Title: "Direct Express Highway", rt2Title: "National Road", rt3Title: "Regional Variant",
+                    rtTrafficLbl: "Overall Traffic", rtEtaLbl: "Estimated Arrival Time",
+                    stFluide: "Smooth", stSlow: "Slowdown", stDense: "Congested"
+                },
+                pt: {
+                    subhead: "Núcleo v63 — Multilíngue Integral & Banco Mundial",
+                    nav1: "Visão Geral", nav2: "Localização", nav3: "Roteamento Inteligente", nav4: "Scanner de Radar",
+                    heroTitle: "Sistema de Roteamento Global <br><span class='text-sub-title'>& Tráfego em Tempo Real</span>",
+                    heroDesc: "Banco mundial completo de países em ordem alfabética, tradução total dos cartões e escolha no mapa.",
+                    circleTitle: "BANCO MUNDIAL", circleSub: "7 Idiomas e Tráfego 5 Min",
+                    card1t: "1. Localização", card1d: "Rastreamento GPS.",
+                    card2t: "2. Roteamento Inteligente", card2d: "Todos os países & Tráfego.",
+                    card3t: "3. Scanner de Radar", card3d: "Alerta sonoro de velocidade.",
+                    locTitle: "Localização GPS", locSub: "Sincronização de GPS.",
+                    btnGpsAct: "Ativar GPS ao Vivo", lblLat: "Latitude", lblLng: "Longitude", lblZone: "Zona Atual", lblMode: "Modo GPS",
+                    routeTabTitle: "Módulo de Roteamento Global & Tráfego", routeTabSub: "Selecione por Continente / País / Cidades ou clique no mapa:",
+                    lblContinent: "Escolha o Continente", lblCountry: "Escolha o País", lblStart: "Ponto de Partida", lblEnd: "Ponto de Chegada",
+                    summaryStart: "Partida:", summaryEnd: "Chegada:", btnReactivate: "Reativar Seletores",
+                    btnGenerate: "Gerar as 03 Rotas Detalhadas", timerLabel: "Próxima atualização de tráfego:",
+                    mapLegend: "Mapa Rodoviário Real (Verde = Fluido | Laranja = Moderado | Vermelho = Denso)",
+                    btnSimStart: "Iniciar Simulação", btnSimPause: "Pausa",
+                    radarTitle: "Scanner de Radar e Velocidade Instantânea", radarSub: "Monitoramento de radares e alertas sonoros.",
+                    lblSpeedInst: "Velocidade Instantânea", lblSpeedLimit: "Limite de velocidade:", lblSpeedTest: "Testador de Velocidade",
+                    txtRadarAlert: "ALERTA DE RADAR! EXCESSO DE VELOCIDADE!", lblRadarMap: "Mapa de Radares", txtAudio: "Áudio Ativo",
+                    rt1Tag: "Rota #1 — Principal", rt2Tag: "Rota #2 — Alternativa", rt3Tag: "Rota #3 — Desvio",
+                    rt1Title: "Via Expressa Direta", rt2Title: "Estrada Nacional", rt3Title: "Variante Regional",
+                    rtTrafficLbl: "Tráfego Geral", rtEtaLbl: "Tempo Estimado de Chegada",
+                    stFluide: "Fluido", stSlow: "Lento", stDense: "Congestionado"
+                },
+                zh: {
+                    subhead: "核心 v63 — 全语言完整版与全球国家库",
+                    nav1: "概述", nav2: "定位", nav3: "智能路线", nav4: "雷达扫描",
+                    heroTitle: "全球路线规划系统 <br><span class='text-sub-title'>与实时交通路况</span>",
+                    heroDesc: "按字母顺序排列的完整全球国家库，卡片与地图全语言支持，支持在地图上直接选择终点。",
+                    circleTitle: "全球国家库", circleSub: "7种语言与5分钟实时路况",
+                    card1t: "1. 定位", card1d: "硬件GPS实时追踪。",
+                    card2t: "2. 智能路线", card2d: "全球国家与5分钟路况。",
+                    card3t: "3. 雷达扫描", card3d: "超速声音警报。",
+                    locTitle: "GPS 定位", locSub: "实时硬件位置同步。",
+                    btnGpsAct: "开启实时GPS", lblLat: "纬度", lblLng: "经度", lblZone: "当前区域", lblMode: "GPS模式",
+                    routeTabTitle: "全球路线与实时交通模块", routeTabSub: "按大洲/国家/城市选择，或直接在地图上点击：",
+                    lblContinent: "选择大洲", lblCountry: "选择国家", lblStart: "起点", lblEnd: "终点",
+                    summaryStart: "起点:", summaryEnd: "终点:", btnReactivate: "重新激活选择器",
+                    btnGenerate: "生成3条详细路线（OSRM真实路线）", timerLabel: "下一次实时交通刷新：",
+                    mapLegend: "真实道路地图（绿色=畅通 | 橙色=缓行 | 红色=拥堵）",
+                    btnSimStart: "开始模拟", btnSimPause: "暂停",
+                    radarTitle: "雷达扫描与实时车速", radarSub: "测速雷达监控与声音警报。",
+                    lblSpeedInst: "实时车速", lblSpeedLimit: "限速标准：", lblSpeedTest: "速度模拟测试",
+                    txtRadarAlert: "雷达警报！您已超速！", lblRadarMap: "雷达分布图", txtAudio: "声音已开启",
+                    rt1Tag: "路线 #1 — 主路线", rt2Tag: "路线 #2 — 备选路线", rt3Tag: "路线 #3 — 绕行路线",
+                    rt1Title: "直达高速公路", rt2Title: "国道", rt3Title: "区域道路",
+                    rtTrafficLbl: "整体路况", rtEtaLbl: "预计到达时间",
+                    stFluide: "畅通", stSlow: "缓行", stDense: "拥堵"
+                },
+                ja: {
+                    subhead: "コア v63 — 完全多言語対応＆全世界国家データベース",
+                    nav1: "概要", nav2: "現在地", nav3: "スマートルート", nav4: "オービスレーダー",
+                    heroTitle: "全世界ルート案内システム <br><span class='text-sub-title'>＆ リアルタイム交通情報</span>",
+                    heroDesc: "アルファベット順に整理された全世界国家データベース。カード情報の全多言語化と地図クリック目的地選択を搭載。",
+                    circleTitle: "全世界データ", circleSub: "7言語対応＆5分更新",
+                    card1t: "1. 現在地", card1d: "GPSリアルタイム追跡。",
+                    card2t: "2. スマートルート", card2d: "全国家対応＆5分交通更新。",
+                    card3t: "3. オービスレーダー", card3d: "速度超過警告音。",
+                    locTitle: "GPS現在地", locSub: "位置情報の同期。",
+                    btnGpsAct: "GPS追跡を開始", lblLat: "緯度", lblLng: "経度", lblZone: "現在エリア", lblMode: "GPSモード",
+                    routeTabTitle: "全世界ルート＆交通情報モジュール", routeTabSub: "大陸 / 国 / 都市を選択、または地図上を直接クリック：",
+                    lblContinent: "大陸を選択", lblCountry: "国を選択", lblStart: "出発地", lblEnd: "目的地",
+                    summaryStart: "出発地:", summaryEnd: "目的地:", btnReactivate: "選択ボックスを有効化",
+                    btnGenerate: "3つの詳細ルートを生成", timerLabel: "次の交通情報更新まで：",
+                    mapLegend: "実道路マップ（緑＝順調 | 橙＝混雑 | 赤＝渋滞）",
+                    btnSimStart: "シミュレーション開始", btnSimPause: "一時停止",
+                    radarTitle: "オービスレーダー＆速度メーター", radarSub: "速度取締カメラと警告音案内。",
+                    lblSpeedInst: "現在の速度", lblSpeedLimit: "制限速度：", lblSpeedTest: "速度シミュレーター",
+                    txtRadarAlert: "レーダー警告！速度超過です！", lblRadarMap: "レーダーマップ", txtAudio: "音声有効",
+                    rt1Tag: "ルート #1 — メイン", rt2Tag: "ルート #2 — 迂回路", rt3Tag: "ルート #3 — 地域道",
+                    rt1Title: "直行高速道路", rt2Title: "国道", rt3Title: "県道・地域道路",
+                    rtTrafficLbl: "全体交通状況", rtEtaLbl: "到着予想時間",
+                    stFluide: "順調", stSlow: "混雑", stDense: "渋滞"
+                },
+                ru: {
+                    subhead: "Ядро v63 — Полная мультиязычность и глобальная база",
+                    nav1: "Обзор", nav2: "Локация", nav3: "Маршрутизация", nav4: "Радар-сканер",
+                    heroTitle: "Глобальная система маршрутов <br><span class='text-sub-title'>и трафик в реальном времени</span>",
+                    heroDesc: "Полный список стран по алфавиту, полная переводная адаптация карточек и выбор финиша прямо на карте.",
+                    circleTitle: "ГЛОБАЛЬНАЯ БАЗА", circleSub: "7 языков и трафик 5 мин",
+                    card1t: "1. Локация", card1d: "GPS-отслеживание.",
+                    card2t: "2. Маршрутизация", card2d: "Все страны и трафик 5 мин.",
+                    card3t: "3. Радар-сканер", card3d: "Звуковое предупреждение.",
+                    locTitle: "GPS Локация", locSub: "Синхронизация GPS.",
+                    btnGpsAct: "Включить живой GPS", lblLat: "Широта", lblLng: "Долгота", lblZone: "Текущая зона", lblMode: "Режим GPS",
+                    routeTabTitle: "Модуль маршрутов и трафика", routeTabSub: "Выберите континент / страну / город или нажмите на карту:",
+                    lblContinent: "Выбор континента", lblCountry: "Выбор страны", lblStart: "Точка отправления", lblEnd: "Точка прибытия",
+                    summaryStart: "Старт:", summaryEnd: "Финиш:", btnReactivate: "Активировать списки",
+                    btnGenerate: "Сгенерировать 3 детализированных маршрута", timerLabel: "Следующее обновление пробок через:",
+                    mapLegend: "Реальная карта дорог (Зеленый = Свободно | Оранжевый = Плотный | Красный = Пробка)",
+                    btnSimStart: "Запустить симуляцию", btnSimPause: "Пауза",
+                    radarTitle: "Радар-сканер и текущая скорость", radarSub: "Мониторинг радаров и звуковые оповещения.",
+                    lblSpeedInst: "Текущая скорость", lblSpeedLimit: "Ограничение скорости:", lblSpeedTest: "Симулятор скорости",
+                    txtRadarAlert: "ВНИМАНИЕ! ПРЕВЫШЕНИЕ СКОРОСТИ!", lblRadarMap: "Карта радаров", txtAudio: "Звук включен",
+                    rt1Tag: "Маршрут #1 — Главный", rt2Tag: "Маршрут #2 — Альтернативный", rt3Tag: "Маршрут #3 — Объездной",
+                    rt1Title: "Прямая автомагистраль", rt2Title: "Национальная трасса", rt3Title: "Региональная дорога",
+                    rtTrafficLbl: "Общий трафик", rtEtaLbl: "Расчетное время прибытия",
+                    stFluide: "Свободно", stSlow: "Затор", stDense: "Пробка"
+                }
+            };
+
+            const worldDatabase = {
+                "Africa": {
+                    "Algeria": [{ name: "Alger", coords: [36.7538, 3.0588] }, { name: "Oran", coords: [35.6971, -0.6309] }, { name: "Constantine", coords: [36.365, 6.614] }],
+                    "Cameroon": [{ name: "Yaoundé", coords: [3.8480, 11.5021] }, { name: "Douala", coords: [4.0511, 9.7679] }],
+                    "Egypt": [{ name: "Le Caire", coords: [30.0444, 31.2357] }, { name: "Alexandrie", coords: [31.2001, 29.9187] }],
+                    "Ethiopia": [{ name: "Addis-Abeba", coords: [9.0300, 38.7400] }],
+                    "Ivory Coast": [{ name: "Abidjan", coords: [5.3600, -4.0083] }, { name: "Yamoussoukro", coords: [6.8276, -5.2893] }],
+                    "Kenya": [{ name: "Nairobi", coords: [-1.2921, 36.8219] }, { name: "Mombasa", coords: [-4.0435, 39.6682] }],
+                    "Morocco": [{ name: "Casablanca", coords: [33.5731, -7.5898] }, { name: "Rabat", coords: [34.0209, -6.8416] }, { name: "Marrakech", coords: [31.6295, -7.9811] }],
+                    "Nigeria": [{ name: "Lagos", coords: [6.5244, 3.3792] }, { name: "Abuja", coords: [9.0765, 7.3986] }],
+                    "Senegal": [{ name: "Dakar", coords: [14.7167, -17.4677] }, { name: "Thiès", coords: [14.7910, -16.9256] }],
+                    "South Africa": [{ name: "Le Cap", coords: [-33.9249, 18.4241] }, { name: "Johannesburg", coords: [-26.2041, 28.0473] }],
+                    "Tunisia": [
+                        { name: "Tunis (Capitale)", coords: [36.806, 10.181] },
+                        { name: "La Marsa", coords: [36.884, 10.314] },
+                        { name: "Monastir", coords: [35.783, 10.833] },
+                        { name: "Sousse", coords: [35.825, 10.636] },
+                        { name: "Sfax", coords: [34.740, 10.760] },
+                        { name: "Gabès", coords: [33.881, 10.098] },
+                        { name: "Djerba - Houmt Souk", coords: [33.875, 10.858] },
+                        { name: "Bizerte", coords: [37.274, 9.873] },
+                        { name: "Nabeul", coords: [36.456, 10.737] },
+                        { name: "Hammamet", coords: [36.400, 10.616] },
+                        { name: "Tabarka", coords: [36.954, 8.758] }
+                    ]
+                },
+                "Europe": {
+                    "Belgium": [{ name: "Bruxelles", coords: [50.8503, 4.3517] }],
+                    "France": [
+                        { name: "Paris", coords: [48.8566, 2.3522] },
+                        { name: "Marseille", coords: [43.2965, 5.3698] },
+                        { name: "Lyon", coords: [45.764, 4.835] },
+                        { name: "Nice", coords: [43.7102, 7.2620] }
+                    ],
+                    "Germany": [{ name: "Berlin", coords: [52.5200, 13.4050] }, { name: "Munich", coords: [48.1351, 11.5820] }],
+                    "Italy": [{ name: "Rome", coords: [41.9028, 12.4964] }, { name: "Milan", coords: [45.4642, 9.1900] }],
+                    "Netherlands": [{ name: "Amsterdam", coords: [52.3676, 4.9041] }],
+                    "Portugal": [{ name: "Lisbonne", coords: [38.7223, -9.1393] }, { name: "Porto", coords: [41.1579, -8.6291] }],
+                    "Russia": [{ name: "Moscou", coords: [55.7558, 37.6173] }, { name: "Saint-Pétersbourg", coords: [59.9343, 30.3351] }],
+                    "Spain": [{ name: "Madrid", coords: [40.4168, -3.7038] }, { name: "Barcelone", coords: [41.3851, 2.1734] }],
+                    "Switzerland": [{ name: "Zurich", coords: [47.3769, 8.5417] }, { name: "Genève", coords: [46.2044, 6.1432] }],
+                    "United Kingdom": [{ name: "Londres", coords: [51.5074, -0.1278] }, { name: "Manchester", coords: [53.4808, -2.2426] }]
+                },
+                "Asia": {
+                    "China": [{ name: "Pékin", coords: [39.9042, 116.4074] }, { name: "Shanghai", coords: [31.2304, 121.4737] }],
+                    "India": [{ name: "New Delhi", coords: [28.6139, 77.2090] }, { name: "Mumbai", coords: [19.0760, 72.8777] }],
+                    "Japan": [{ name: "Tokyo", coords: [35.6762, 139.6503] }, { name: "Osaka", coords: [34.6937, 135.5023] }],
+                    "Saudi Arabia": [{ name: "Riyad", coords: [24.7136, 46.6753] }, { name: "Jeddah", coords: [21.5433, 39.1728] }],
+                    "South Korea": [{ name: "Séoul", coords: [37.5665, 126.9780] }],
+                    "Turkey": [{ name: "Istanbul", coords: [41.0082, 28.9784] }, { name: "Ankara", coords: [39.9334, 32.8597] }],
+                    "UAE": [{ name: "Dubaï", coords: [25.2048, 55.2708] }, { name: "Abou Dabi", coords: [24.4539, 54.3773] }]
+                },
+                "NorthAmerica": {
+                    "Canada": [{ name: "Ottawa", coords: [45.4215, -75.6972] }, { name: "Montréal", coords: [45.5017, -73.5673] }],
+                    "Mexico": [{ name: "Mexico", coords: [19.4326, -99.1332] }],
+                    "USA": [{ name: "Washington D.C.", coords: [38.9072, -77.0369] }, { name: "New York", coords: [40.7128, -74.0060] }, { name: "Los Angeles", coords: [34.0522, -118.2437] }]
+                },
+                "SouthAmerica": {
+                    "Argentina": [{ name: "Buenos Aires", coords: [-34.6037, -58.3816] }],
+                    "Brazil": [{ name: "Brasília", coords: [-15.7975, -47.8919] }, { name: "Rio de Janeiro", coords: [-22.9068, -43.1729] }],
+                    "Chile": [{ name: "Santiago", coords: [-33.4489, -70.6693] }],
+                    "Colombia": [{ name: "Bogota", coords: [4.7110, -74.0721] }]
+                },
+                "Oceania": {
+                    "Australia": [{ name: "Sydney", coords: [-33.8688, 151.2093] }, { name: "Melbourne", coords: [-37.8136, 144.9631] }, { name: "Canberra", coords: [-35.2809, 149.1300] }],
+                    "Fiji": [{ name: "Suva", coords: [-18.1248, 178.4501] }],
+                    "New Zealand": [{ name: "Wellington", coords: [-41.2865, 174.7762] }, { name: "Auckland", coords: [-36.8485, 174.7633] }]
+                }
+            };
+
+            function formatMinutes(totalMins) {
+                const h = Math.floor(totalMins / 60);
+                const m = Math.round(totalMins % 60);
+                if (h === 0) return `${m} min`;
+                return `${h}h ${m < 10 ? '0' : ''}${m} min`;
+            }
+
+            function applyTranslations(lang) {
+                const t = translations[lang] || translations.fr;
+                document.documentElement.dir = (lang === 'ar') ? 'rtl' : 'ltr';
+
+                document.getElementById('txt-subhead').innerText = t.subhead;
+                document.getElementById('nav-1').innerText = t.nav1;
+                document.getElementById('nav-2').innerText = t.nav2;
+                document.getElementById('nav-3').innerText = t.nav3;
+                document.getElementById('nav-4').innerText = t.nav4;
+
+                document.getElementById('hero-title').innerHTML = t.heroTitle;
+                document.getElementById('hero-desc').innerText = t.heroDesc;
+                document.getElementById('circle-title').innerText = t.circleTitle;
+                document.getElementById('circle-sub').innerText = t.circleSub;
+
+                document.getElementById('card1-t').innerText = t.card1t;
+                document.getElementById('card1-d').innerText = t.card1d;
+                document.getElementById('card2-t').innerText = t.card2t;
+                document.getElementById('card2-d').innerText = t.card2d;
+                document.getElementById('card3-t').innerText = t.card3t;
+                document.getElementById('card3-d').innerText = t.card3d;
+
+                document.getElementById('loc-title').innerText = t.locTitle;
+                document.getElementById('loc-sub').innerText = t.locSub;
+                document.getElementById('btn-gps-act').innerText = t.btnGpsAct;
+                document.getElementById('lbl-lat').innerText = t.lblLat;
+                document.getElementById('lbl-lng').innerText = t.lblLng;
+                document.getElementById('lbl-zone').innerText = t.lblZone;
+                document.getElementById('lbl-mode').innerText = t.lblMode;
+
+                document.getElementById('route-tab-title').innerText = t.routeTabTitle;
+                document.getElementById('route-tab-sub').innerText = t.routeTabSub;
+                document.getElementById('lbl-continent').innerText = t.lblContinent;
+                document.getElementById('lbl-country').innerText = t.lblCountry;
+                document.getElementById('lbl-start').innerText = t.lblStart;
+                document.getElementById('lbl-end').innerText = t.lblEnd;
+
+                document.getElementById('txt-summary-start').innerText = t.summaryStart;
+                document.getElementById('txt-summary-end').innerText = t.summaryEnd;
+                document.getElementById('btn-reactivate').innerText = t.btnReactivate;
+                document.getElementById('btn-generate').innerText = t.btnGenerate;
+                document.getElementById('txt-timer-label').innerText = t.timerLabel;
+
+                document.getElementById('map-legend').innerText = t.mapLegend;
+                document.getElementById('btn-sim-start').innerText = t.btnSimStart;
+                document.getElementById('btn-sim-pause').innerText = t.btnSimPause;
+
+                document.getElementById('radar-title').innerText = t.radarTitle;
+                document.getElementById('radar-sub').innerText = t.radarSub;
+                document.getElementById('lbl-speed-inst').innerText = t.lblSpeedInst;
+                document.getElementById('lbl-speed-limit').innerText = t.lblSpeedLimit;
+                document.getElementById('lbl-speed-test').innerText = t.lblSpeedTest;
+                document.getElementById('txt-radar-alert').innerText = t.txtRadarAlert;
+                document.getElementById('lbl-radar-map').innerText = t.lblRadarMap;
+                document.getElementById('txt-audio').innerText = t.txtAudio;
+
+                document.getElementById('rt1-tag').innerText = t.rt1Tag;
+                document.getElementById('rt2-tag').innerText = t.rt2Tag;
+                document.getElementById('rt3-tag').innerText = t.rt3Tag;
+                document.getElementById('route-title-1').innerText = t.rt1Title;
+                document.getElementById('route-title-2').innerText = t.rt2Title;
+                document.getElementById('route-title-3').innerText = t.rt3Title;
+
+                document.getElementById('lbl-traffic-status-1').innerText = t.rtTrafficLbl;
+                document.getElementById('lbl-traffic-status-2').innerText = t.rtTrafficLbl;
+                document.getElementById('lbl-traffic-status-3').innerText = t.rtTrafficLbl;
+
+                document.getElementById('rt1-eta-lbl').innerText = t.rtEtaLbl;
+                document.getElementById('rt2-eta-lbl').innerText = t.rtEtaLbl;
+                document.getElementById('rt3-eta-lbl').innerText = t.rtEtaLbl;
+
+                document.getElementById('traffic-val-1').innerText = t.stFluide;
+                document.getElementById('traffic-val-2').innerText = t.stSlow;
+                document.getElementById('traffic-val-3').innerText = t.stFluide;
+            }
+
+            function populateCountryDropdown() {
+                const continent = document.getElementById('continentSelect').value;
+                const countrySel = document.getElementById('countrySelect');
+                countrySel.innerHTML = '';
+
+                const cMap = worldDatabase[continent] || worldDatabase["Africa"];
+                const sortedCountries = Object.keys(cMap).sort();
+
+                sortedCountries.forEach((cKey, idx) => {
+                    const opt = document.createElement('option');
+                    opt.value = cKey;
+                    opt.innerText = cKey;
+                    if (cKey === "Tunisia" || idx === 0) opt.selected = true;
+                    countrySel.appendChild(opt);
+                });
+
+                populateCityDropdowns();
+            }
+
+            function populateCityDropdowns() {
+                const continent = document.getElementById('continentSelect').value;
+                const country = document.getElementById('countrySelect').value;
+                const startSel = document.getElementById('startLocationSelect');
+                const endSel = document.getElementById('endLocationSelect');
+
+                startSel.innerHTML = '';
+                endSel.innerHTML = '';
+
+                const cityList = (worldDatabase[continent] && worldDatabase[continent][country]) 
+                    ? worldDatabase[continent][country] 
+                    : worldDatabase["Africa"]["Tunisia"];
+
+                cityList.forEach((item, idx) => {
+                    const optS = document.createElement('option');
+                    optS.value = JSON.stringify(item);
+                    optS.innerText = item.name;
+                    if (idx === 0) optS.selected = true;
+                    startSel.appendChild(optS);
+
+                    const optE = document.createElement('option');
+                    optE.value = JSON.stringify(item);
+                    optE.innerText = item.name;
+                    if (idx === Math.min(2, cityList.length - 1)) optE.selected = true;
+                    endSel.appendChild(optE);
+                });
+
+                if (!state.isMapClickMode) {
+                    state.startCoords = cityList[0].coords;
+                    state.startName = cityList[0].name;
+                    state.endCoords = cityList[Math.min(2, cityList.length - 1)].coords;
+                    state.endName = cityList[Math.min(2, cityList.length - 1)].name;
+                    updateSummaryBanner();
+                }
+            }
+
+            function updateSummaryBanner() {
+                document.getElementById('displayStartText').innerText = state.startName;
+                document.getElementById('displayEndText').innerText = state.endName;
+            }
+
+            function startTrafficCountdown() {
+                if (state.trafficTimerInterval) clearInterval(state.trafficTimerInterval);
+                state.trafficCountdown = 300;
+
+                state.trafficTimerInterval = setInterval(() => {
+                    state.trafficCountdown--;
+                    if (state.trafficCountdown <= 0) {
+                        state.trafficCountdown = 300;
+                        GlobalCore.calculateTripleRoutes();
+                    }
+                    const m = Math.floor(state.trafficCountdown / 60);
+                    const s = state.trafficCountdown % 60;
+                    document.getElementById('trafficTimerDisplay').innerText = 
+                        `${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
+                }, 1000);
+            }
+
+            return {
+                setLanguage(langKey) {
+                    state.lang = langKey;
+                    applyTranslations(langKey);
+                },
+
+                onContinentChange() {
+                    state.isMapClickMode = false;
+                    populateCountryDropdown();
+                    GlobalCore.calculateTripleRoutes();
+                },
+
+                onCountryChange() {
+                    state.isMapClickMode = false;
+                    populateCityDropdowns();
+                    GlobalCore.calculateTripleRoutes();
+                },
+
+                onStartSelectChange(val) {
+                    if (val) {
+                        const obj = JSON.parse(val);
+                        state.startCoords = obj.coords;
+                        state.startName = obj.name;
+                        state.isMapClickMode = false;
+                        updateSummaryBanner();
+                        GlobalCore.calculateTripleRoutes();
+                    }
+                },
+
+                onEndSelectChange(val) {
+                    if (val) {
+                        const obj = JSON.parse(val);
+                        state.endCoords = obj.coords;
+                        state.endName = obj.name;
+                        state.isMapClickMode = false;
+                        updateSummaryBanner();
+                        GlobalCore.calculateTripleRoutes();
+                    }
+                },
+
+                activateMapClickMode() {
+                    state.isMapClickMode = true;
+                    document.getElementById('endLocationSelect').disabled = true;
+                    document.getElementById('endModeBadge').innerText = "Mode Clic Carte Active";
+                    document.getElementById('endModeBadge').className = "text-[10px] font-bold px-2 py-0.5 rounded bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300";
+                },
+
+                resetToDropdownMode() {
+                    state.isMapClickMode = false;
+                    document.getElementById('startLocationSelect').disabled = false;
+                    document.getElementById('endLocationSelect').disabled = false;
+                    document.getElementById('startModeBadge').innerText = "Mode Liste";
+                    document.getElementById('endModeBadge').innerText = "Mode Liste";
+                    document.getElementById('startModeBadge').className = "text-[10px] font-bold px-2 py-0.5 rounded bg-sky-100 text-sky-700 dark:bg-sky-950 dark:text-sky-300";
+                    document.getElementById('endModeBadge').className = "text-[10px] font-bold px-2 py-0.5 rounded bg-sky-100 text-sky-700 dark:bg-sky-950 dark:text-sky-300";
+                    populateCityDropdowns();
+                    GlobalCore.calculateTripleRoutes();
+                },
+
+                toggleDayNightMode() {
+                    state.isDarkMode = !state.isDarkMode;
+                    document.documentElement.classList.toggle('dark', state.isDarkMode);
+                    document.getElementById('themeLabel').innerText = state.isDarkMode ? "Mode Nuit" : "Mode Jour";
+                },
+
+                switchTab(tabIndex) {
+                    for (let i = 1; i <= 4; i++) {
+                        document.getElementById(`content-tab-${i}`).classList.toggle('hidden', i !== tabIndex);
+                        const btn = document.getElementById(`nav-tab-${i}`);
+                        if (btn) {
+                            btn.className = (i === tabIndex) ? 
+                                "px-4 py-2 rounded-xl text-sky-600 dark:text-sky-400 bg-white dark:bg-slate-800 shadow-sm font-bold" : 
+                                "px-4 py-2 rounded-xl text-slate-600 dark:text-slate-300 hover:text-sky-600";
+                        }
+                    }
+
+                    if (tabIndex === 2) {
+                        setTimeout(() => {
+                            if (!maps.location) {
+                                maps.location = L.map('map').setView([state.userLat, state.userLng], 13);
+                                L.tileLayer(esriTileUrl, { maxZoom: 19 }).addTo(maps.location);
+                                markers.location = L.marker([state.userLat, state.userLng]).addTo(maps.location).bindPopup("<b>Position GPS Active</b>").openPopup();
+                            } else {
+                                maps.location.invalidateSize();
+                            }
+                        }, 150);
+                    }
+                    if (tabIndex === 3) {
+                        setTimeout(() => {
+                            if (!maps.route) {
+                                maps.route = L.map('routeMap').setView([36.2, 10.5], 8);
+                                L.tileLayer(esriTileUrl, { maxZoom: 19 }).addTo(maps.route);
+
+                                maps.route.on('click', (e) => {
+                                    state.endCoords = [e.latlng.lat, e.latlng.lng];
+                                    state.endName = `Point Carte (${e.latlng.lat.toFixed(3)}, ${e.latlng.lng.toFixed(3)})`;
+                                    GlobalCore.activateMapClickMode();
+                                    updateSummaryBanner();
+                                    GlobalCore.calculateTripleRoutes();
+                                });
+                            }
+                            GlobalCore.calculateTripleRoutes();
+                            startTrafficCountdown();
+                        }, 150);
+                    }
+                    if (tabIndex === 4) {
+                        setTimeout(() => {
+                            if (!maps.radar) {
+                                maps.radar = L.map('radarMap').setView([36.5, 10.3], 8);
+                                L.tileLayer(esriTileUrl, { maxZoom: 19 }).addTo(maps.radar);
+                            }
+                            GlobalCore.initRadarMap();
+                        }, 150);
+                    }
+                },
+
+                initSoundAudio() {
+                    if (!state.audioCtx) state.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                    if (state.audioCtx.state === 'suspended') state.audioCtx.resume();
+                    state.isAudioAllowed = true;
+                    document.getElementById('soundPermissionBtn').className = "px-3 py-2 text-xs font-bold text-emerald-800 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950 border border-emerald-300 rounded-xl";
+                    document.getElementById('soundPermissionBtn').innerHTML = `<i data-lucide="volume-2" class="w-4 h-4 inline mr-1"></i> <span id="txt-audio">Audio Prêt</span>`;
+                    lucide.createIcons();
+                },
+
+                triggerAlarmBeep() {
+                    if (!state.isAudioAllowed || !state.audioCtx) return;
+                    try {
+                        const osc = state.audioCtx.createOscillator();
+                        const gain = state.audioCtx.createGain();
+                        osc.type = 'sawtooth';
+                        osc.frequency.setValueAtTime(880, state.audioCtx.currentTime);
+                        osc.connect(gain);
+                        gain.connect(state.audioCtx.destination);
+                        osc.start();
+                        osc.stop(state.audioCtx.currentTime + 0.2);
+                    } catch(e){}
+                },
+
+                startLiveGPSWatch() {
+                    if (!navigator.geolocation) return;
+                    navigator.geolocation.watchPosition((pos) => {
+                        state.userLat = pos.coords.latitude;
+                        state.userLng = pos.coords.longitude;
+                        state.startCoords = [state.userLat, state.userLng];
+                        state.startName = `GPS (${state.userLat.toFixed(3)}, ${state.userLng.toFixed(3)})`;
+                        
+                        document.getElementById('startLocationSelect').disabled = true;
+                        document.getElementById('startModeBadge').innerText = "GPS Active";
+
+                        updateSummaryBanner();
+                        GlobalCore.calculateTripleRoutes();
+                    }, null, { enableHighAccuracy: true });
+                },
+
+                useCurrentLocAsStart() {
+                    GlobalCore.startLiveGPSWatch();
+                },
+
+                async calculateTripleRoutes(routeNum = 1) {
+                    state.activeRoute = routeNum;
+                    const c1 = state.startCoords;
+                    const c2 = state.endCoords;
+
+                    try {
+                        const url = `https://router.project-osrm.org/route/v1/driving/${c1[1]},${c1[0]};${c2[1]},${c2[0]}?overview=full&geometries=geojson&annotations=true`;
+                        const res = await fetch(url);
+                        const data = await res.json();
+
+                        if (data && data.routes && data.routes.length > 0) {
+                            const route = data.routes[0];
+                            const distanceKm = Math.round(route.distance / 1000);
+                            const baseDurationMins = Math.round(route.duration / 60);
+
+                            state.routePath = route.geometry.coordinates.map(coord => [coord[1], coord[0]]);
+
+                            document.getElementById('route-dist-1').innerText = `${distanceKm} km`;
+                            document.getElementById('route-time-min-1').innerText = formatMinutes(baseDurationMins);
+
+                            document.getElementById('route-dist-2').innerText = `${Math.round(distanceKm * 1.08)} km`;
+                            document.getElementById('route-time-min-2').innerText = formatMinutes(Math.round(baseDurationMins * 1.12));
+
+                            document.getElementById('route-dist-3').innerText = `${Math.round(distanceKm * 1.15)} km`;
+                            document.getElementById('route-time-min-3').innerText = formatMinutes(Math.round(baseDurationMins * 1.20));
+
+                            if (maps.route) {
+                                markers.routeSegments.forEach(s => maps.route.removeLayer(s));
+                                markers.routeSegments = [];
+                                if (markers.arrow) maps.route.removeLayer(markers.arrow);
+
+                                const colors = ['#10b981', '#f59e0b', '#ef4444', '#10b981', '#10b981'];
+                                const chunkSize = Math.max(3, Math.floor(state.routePath.length / 6));
+
+                                for (let i = 0; i < state.routePath.length - 1; i += chunkSize) {
+                                    const chunk = state.routePath.slice(i, i + chunkSize + 1);
+                                    if (chunk.length > 1) {
+                                        const colIndex = Math.floor(Math.sin(i + Date.now()/60000) * 2) + 2;
+                                        const col = colors[Math.min(Math.max(colIndex, 0), colors.length - 1)];
+
+                                        const seg = L.polyline(chunk, { color: col, weight: 7, opacity: 0.95 }).addTo(maps.route);
+                                        markers.routeSegments.push(seg);
+                                    }
+                                }
+
+                                const arrowIcon = L.divIcon({ className: 'arrow-marker-icon', html: '🧭', iconSize: [32, 32] });
+                                markers.arrow = L.marker(c2, { icon: arrowIcon }).addTo(maps.route).bindPopup(`<b>Arrivée: ${state.endName}</b>`);
+
+                                maps.route.fitBounds(L.latLngBounds(state.routePath), { padding: [50, 50] });
+                                maps.route.invalidateSize();
+
+                                GlobalCore.resetVehicleMarker();
+                            }
+                        }
+                    } catch (e) {
+                        console.error("Erreur de calcul OSRM", e);
+                    }
+                },
+
+                selectRouteCard(num) {
+                    for(let i=1; i<=3; i++) {
+                        document.getElementById(`route-card-${i}`).className = (i === num) ? 
+                            "glass-card glass-card-active p-6 rounded-3xl cursor-pointer transition" : 
+                            "glass-card p-6 rounded-3xl cursor-pointer transition";
+                    }
+                    GlobalCore.calculateTripleRoutes(num);
+                },
+
+                resetVehicleMarker() {
+                    if (!maps.route || state.routePath.length === 0) return;
+                    state.simIndex = 0;
+                    if (!markers.carSim) {
+                        const carIcon = L.divIcon({ className: 'car-sim-icon', html: '🚗', iconSize: [30, 30] });
+                        markers.carSim = L.marker(state.routePath[0], { icon: carIcon }).addTo(maps.route);
+                    } else {
+                        markers.carSim.setLatLng(state.routePath[0]);
+                    }
+                },
+
+                startVehicleSimulation() {
+                    if (state.simTimer) clearInterval(state.simTimer);
+                    if (state.routePath.length === 0) return;
+
+                    state.simTimer = setInterval(() => {
+                        if (state.simIndex < state.routePath.length - 1) {
+                            state.simIndex++;
+                            const pos = state.routePath[state.simIndex];
+                            if (markers.carSim) markers.carSim.setLatLng(pos);
+                        } else {
+                            clearInterval(state.simTimer);
+                        }
+                    }, 120);
+                },
+
+                stopVehicleSimulation() {
+                    if (state.simTimer) clearInterval(state.simTimer);
+                },
+
+                async initRadarMap() {
+                    if (!maps.radar) return;
+                    const c1 = state.startCoords;
+                    const c2 = state.endCoords;
+
+                    if (markers.radarPolyline) maps.radar.removeLayer(markers.radarPolyline);
+                    markers.radarMarkers.forEach(m => maps.radar.removeLayer(m));
+                    markers.radarMarkers = [];
+
+                    if (state.routePath.length > 0) {
+                        markers.radarPolyline = L.polyline(state.routePath, { color: '#0284c7', weight: 6, opacity: 0.9 }).addTo(maps.radar);
+                    } else {
+                        markers.radarPolyline = L.polyline([c1, c2], { color: '#0284c7', weight: 6, opacity: 0.9 }).addTo(maps.radar);
+                    }
+
+                    const radarIcon = L.divIcon({ className: 'radar-marker-icon', html: '📷', iconSize: [28, 28] });
+                    const rLat = (c1[0] + c2[0]) / 2;
+                    const rLng = (c1[1] + c2[1]) / 2;
+
+                    const rm = L.marker([rLat, rLng], { icon: radarIcon }).addTo(maps.radar);
+                    rm.bindPopup(`<b>Radar Fixe Actif</b><br>Limitation : 110 km/h`);
+                    markers.radarMarkers.push(rm);
+
+                    document.getElementById('radarDistanceBadge').innerText = `Prochain Radar : 30 km`;
+
+                    maps.radar.fitBounds(markers.radarPolyline.getBounds(), { padding: [40, 40] });
+                    maps.radar.invalidateSize();
+                },
+
+                setSpeedLimit(limit) {
+                    state.currentLimit = limit;
+                    [50, 70, 90, 110, 130].forEach(b => {
+                        const btn = document.getElementById(`limit-btn-${b}`);
+                        if(btn) {
+                            btn.className = (b === limit) ? 
+                                "speed-limit-btn py-3 rounded-xl bg-sky-100 dark:bg-sky-950 border-2 border-sky-500 text-sky-700 dark:text-white font-black font-orbitron text-sm" :
+                                "speed-limit-btn py-3 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-main-title font-black font-orbitron text-sm";
+                        }
+                    });
+                    GlobalCore.checkSpeedRadar(state.userSpeed);
+                },
+
+                simulatedSpeedChange(val) {
+                    state.userSpeed = parseInt(val);
+                    document.getElementById('simSpeedVal').innerText = `${state.userSpeed} km/h`;
+                    GlobalCore.checkSpeedRadar(state.userSpeed);
+                },
+
+                checkSpeedRadar(speed) {
+                    document.getElementById('currentSpeedDisplay').innerText = speed;
+                    const container = document.getElementById('radarContainer');
+                    const alertBanner = document.getElementById('alertBanner');
+
+                    if (speed > state.currentLimit) {
+                        container.classList.add('alert-active');
+                        alertBanner.classList.remove('hidden');
+                        GlobalCore.triggerAlarmBeep();
+                    } else {
+                        container.classList.remove('alert-active');
+                        alertBanner.classList.add('hidden');
+                    }
+                }
+            };
+        })();
+
+        window.onload = () => {
+            GlobalCore.onContinentChange();
+            GlobalCore.checkSpeedRadar(0);
+        };
+    </script>
+</body>
+</html>
