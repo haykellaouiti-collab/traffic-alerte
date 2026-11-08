@@ -513,16 +513,121 @@
             </div>
         </section>
 
+
+        <!-- SECTION ÉDITORIALE : GUIDES DE SÉCURITÉ ROUTIÈRE, NAVIGATION OSRM & PRÉVENTION RADAR (CONFORMITÉ ADSENSE) -->
+        <section id="guides-routiers-section" class="mt-12 space-y-6">
+            <div class="glass-card p-6 sm:p-8 rounded-3xl space-y-6">
+                <div class="text-center max-w-3xl mx-auto space-y-2">
+                    <span class="text-xs font-black text-sky-600 dark:text-sky-400 uppercase tracking-widest">Dossiers Prévention & Télématique</span>
+                    <h2 class="text-2xl sm:text-3xl font-black font-orbitron text-main-title">🚗 Guides de Sécurité Routière, Calcul d'Itinéraires & Éco-Conduite</h2>
+                    <p class="text-body-p text-xs sm:text-sm leading-relaxed">
+                        Comprendre le calcul d'itinéraires temps réel, anticiper les zones de ralentissement et maîtriser les limitations de vitesse en milieu urbain, sur route nationale et sur autoroute.
+                    </p>
+                </div>
+
+                <div class="grid md:grid-cols-2 gap-6">
+                    <article class="p-6 rounded-2xl bg-slate-100/80 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 space-y-3">
+                        <div class="flex items-center gap-2 text-xs font-bold text-sky-600 dark:text-sky-400 uppercase">
+                            <i data-lucide="route" class="w-4 h-4"></i> Algorithmes de Routage
+                        </div>
+                        <h3 class="text-lg font-extrabold text-main-title">Comment fonctionne le calcul d'itinéraire dynamique OSRM ?</h3>
+                        <p class="text-body-p text-xs sm:text-sm leading-relaxed">
+                            Le moteur <strong>OSRM (Open Source Routing Machine)</strong> analyse le graphe routier mondial issu d'OpenStreetMap en pondérant chaque tronçon selon la catégorie de voie (autoroute, voie express, route nationale ou desserte urbaine), les sens uniques et les vitesses moyennes constatées. La comparaison entre l'itinéraire principal et les variantes d'évitement permet de réduire le temps de trajet lors des pics de congestion.
+                        </p>
+                    </article>
+
+                    <article class="p-6 rounded-2xl bg-slate-100/80 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 space-y-3">
+                        <div class="flex items-center gap-2 text-xs font-bold text-rose-600 dark:text-rose-400 uppercase">
+                            <i data-lucide="shield-check" class="w-4 h-4"></i> Prévention & Vitesse
+                        </div>
+                        <h3 class="text-lg font-extrabold text-main-title">Distances de freinage et respect des paliers de vitesse (50 à 130 km/h)</h3>
+                        <p class="text-body-p text-xs sm:text-sm leading-relaxed">
+                            La distance d'arrêt d'un véhicule combine la distance parcourue pendant le temps de réaction du conducteur (environ 1 seconde) et la distance de freinage proprement dite, qui augmente avec le carré de la vitesse. Sur chaussée sèche, passer de <strong>50 km/h</strong> (environ 28 m d'arrêt) à <strong>90 km/h</strong> (environ 70 m) multiplie par plus de deux l'espace nécessaire pour immobiliser le véhicule.
+                        </p>
+                    </article>
+
+                    <article class="p-6 rounded-2xl bg-slate-100/80 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 space-y-3">
+                        <div class="flex items-center gap-2 text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase">
+                            <i data-lucide="fuel" class="w-4 h-4"></i> Éco-Conduite
+                        </div>
+                        <h3 class="text-lg font-extrabold text-main-title">Réduire sa consommation de carburant grâce à l'anticipation du trafic</h3>
+                        <p class="text-body-p text-xs sm:text-sm leading-relaxed">
+                            Une conduite souple, sans accélérations brusques ni freinages tardifs à l'approche des zones denses (signalées en orange ou rouge sur la carte), permet d'économiser jusqu'à 15 % de carburant tout en préservant les plaquettes de frein et les pneumatiques.
+                        </p>
+                    </article>
+
+                    <article class="p-6 rounded-2xl bg-slate-100/80 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 space-y-3">
+                        <div class="flex items-center gap-2 text-xs font-bold text-amber-600 dark:text-amber-400 uppercase">
+                            <i data-lucide="smartphone" class="w-4 h-4"></i> Sécurité au Volant
+                        </div>
+                        <h3 class="text-lg font-extrabold text-main-title">Bonnes pratiques d'utilisation d'un assistant de navigation au volant</h3>
+                        <p class="text-body-p text-xs sm:text-sm leading-relaxed">
+                            Programmez toujours votre point de départ et votre destination avant de démarrer. Fixez votre smartphone sur un support homologué à hauteur du champ de vision sans obstruer le pare-brise et privilégiez les alertes sonores actives afin de garder les yeux sur la route.
+                        </p>
+                    </article>
+                </div>
+            </div>
+        </section>
+
     </main>
 
-    <!-- FOOTER -->
-    <footer class="bg-white dark:bg-slate-950 border-t border-slate-200 dark:border-slate-800 py-6 text-center text-xs text-slate-500">
-        <div class="max-w-7xl mx-auto px-4 space-y-2">
-            <p>&copy; 2026 Trafic Alerte v63. Système Global Multilingue. | 
-               <a href="privacy.html" class="text-sky-500 hover:underline">Politique de Confidentialité</a>
-            </p>
+    <!-- FOOTER CONFORME ADSENSE (À PROPOS, CONFIDENTIALITÉ, CONDITIONS D'UTILISATION, CONTACT) -->
+    <footer class="bg-white dark:bg-slate-950 border-t border-slate-200 dark:border-slate-800 py-10 text-xs text-slate-600 dark:text-slate-400">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid md:grid-cols-3 gap-8 pb-8 border-b border-slate-200 dark:border-slate-800">
+                <div class="space-y-3">
+                    <div class="flex items-center space-x-2">
+                        <div class="w-8 h-8 rounded-xl bg-sky-600 flex items-center justify-center text-white">
+                            <i data-lucide="compass" class="w-5 h-5"></i>
+                        </div>
+                        <span class="text-lg font-black font-orbitron text-main-title">TRAFIC<span class="text-sky-600 dark:text-sky-400">ALERTE</span></span>
+                    </div>
+                    <p class="leading-relaxed">
+                        Plateforme mondiale de routage OSRM, suivi GPS en temps réel, prévention des dépassements de vitesse et guides de sécurité routière en 7 langues.
+                    </p>
+                </div>
+
+                <div>
+                    <h4 class="font-bold uppercase tracking-wider text-main-title mb-3">Modules de l'Application</h4>
+                    <ul class="space-y-2">
+                        <li><button onclick="GlobalCore.switchTab(2)" class="hover:text-sky-500 transition">Suivi GPS Matériel en Temps Réel</button></li>
+                        <li><button onclick="GlobalCore.switchTab(3)" class="hover:text-sky-500 transition">Calcul d'Itinéraires OSRM & Trafic</button></li>
+                        <li><button onclick="GlobalCore.switchTab(4)" class="hover:text-sky-500 transition">Scanner Radar & Alertes Sonores</button></li>
+                        <li><a href="#guides-routiers-section" class="hover:text-sky-500 transition">Guides de Sécurité Routière</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h4 class="font-bold uppercase tracking-wider text-main-title mb-3">Informations Légales & Conformité</h4>
+                    <ul class="space-y-2">
+                        <li><button onclick="GlobalCore.openLegalModal('about')" class="hover:text-sky-500 transition underline">À propos de Trafic Alerte</button></li>
+                        <li><button onclick="GlobalCore.openLegalModal('privacy')" class="hover:text-sky-500 transition underline">Politique de Confidentialité & Cookies (AdSense)</button></li>
+                        <li><button onclick="GlobalCore.openLegalModal('terms')" class="hover:text-sky-500 transition underline">Conditions d'Utilisation & Avertissement</button></li>
+                        <li><button onclick="GlobalCore.openLegalModal('contact')" class="hover:text-sky-500 transition underline">Contact Éditeur</button></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="pt-6 flex flex-col sm:flex-row justify-between items-center gap-4">
+                <p>&copy; 2026 Trafic Alerte v63 — Haykel Laouiti. Tous droits réservés.</p>
+                <p class="text-slate-500 text-center sm:text-right">Avertissement : Respectez toujours la signalisation routière officielle en vigueur.</p>
+            </div>
         </div>
     </footer>
+
+    <!-- MODALE LÉGALE ADSENSE -->
+    <div id="legalModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4" onclick="if(event.target===this) GlobalCore.closeLegalModal()">
+        <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-2xl w-full max-h-[85vh] overflow-y-auto p-6 sm:p-8 shadow-2xl border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300">
+            <div class="flex justify-between items-center pb-4 border-b border-slate-200 dark:border-slate-800 mb-4">
+                <h3 id="legalModalTitle" class="text-xl font-black font-orbitron text-main-title">Informations Légales</h3>
+                <button onclick="GlobalCore.closeLegalModal()" class="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-main-title font-bold">✕</button>
+            </div>
+            <div id="legalModalBody" class="space-y-4 text-sm leading-relaxed"></div>
+            <div class="mt-6 pt-4 border-t border-slate-200 dark:border-slate-800 flex justify-end">
+                <button onclick="GlobalCore.closeLegalModal()" class="px-5 py-2.5 bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs rounded-xl">Fermer</button>
+            </div>
+        </div>
+    </div>
 
     <!-- LOGIQUE JS DE L'APPLICATION -->
     <script>
@@ -1267,6 +1372,55 @@
                     state.userSpeed = parseInt(val);
                     document.getElementById('simSpeedVal').innerText = `${state.userSpeed} km/h`;
                     GlobalCore.checkSpeedRadar(state.userSpeed);
+                },
+
+
+                openLegalModal(type) {
+                    const legalData = {
+                        about: {
+                            title: "À propos de Trafic Alerte v63",
+                            body: `
+                                <p><strong>Trafic Alerte</strong> est une application Web interactive d'aide à la navigation, de calcul d'itinéraires multi-variantes (propulsée par OSRM et OpenStreetMap) et de sensibilisation au respect des limitations de vitesse.</p>
+                                <p>Conçue pour les conducteurs internationaux, l'interface est intégralement traduite en 7 langues (Français, Arabe, Anglais, Portugais, Chinois, Japonais, Russe) et couvre les principales villes des six continents.</p>
+                                <p><strong>Responsable de la publication :</strong> Haykel Laouiti, ingénieur en génie mécanique et développeur d'applications web.</p>
+                            `
+                        },
+                        privacy: {
+                            title: "Politique de Confidentialité, Géolocalisation & Cookies",
+                            body: `
+                                <p><strong>1. Données de géolocalisation (GPS) :</strong> Lorsque vous activez le suivi GPS matériel, vos coordonnées (latitude, longitude) sont traitées uniquement en mémoire vive dans votre navigateur pour centrer la carte et calculer votre itinéraire. Aucune trace GPS n'est enregistrée ni transmise à nos serveurs.</p>
+                                <p><strong>2. Publicité Google AdSense et Cookies :</strong> Ce site utilise Google AdSense pour diffuser des annonces. Des fournisseurs tiers, y compris Google, utilisent des cookies pour diffuser des annonces en fonction des visites antérieures des utilisateurs sur ce site Web ou sur d'autres sites Web.</p>
+                                <p><strong>3. Désactivation de la publicité personnalisée :</strong> Vous pouvez gérer vos préférences publicitaires à tout moment via les <a href="https://adssettings.google.com" target="_blank" rel="noopener noreferrer" class="text-sky-600 underline font-bold">Paramètres des annonces Google</a> ou sur <a href="https://www.aboutads.info" target="_blank" rel="noopener noreferrer" class="text-sky-600 underline font-bold">www.aboutads.info</a>.</p>
+                            `
+                        },
+                        terms: {
+                            title: "Conditions d'Utilisation & Avertissement Routier",
+                            body: `
+                                <p><strong>1. Primauté du Code de la Route :</strong> Les estimations de temps de trajet, états du trafic et limitations de vitesse affichés sur <em>Trafic Alerte</em> sont fournis à titre strictement indicatif. La signalisation routière officielle implantée sur la chaussée prévaut en toutes circonstances.</p>
+                                <p><strong>2. Sécurité :</strong> Ne manipulez jamais l'écran de votre appareil lorsque votre véhicule est en mouvement.</p>
+                            `
+                        },
+                        contact: {
+                            title: "Contacter l'Éditeur",
+                            body: `
+                                <p>Pour toute question technique, suggestion d'amélioration ou signalement concernant <strong>Trafic Alerte</strong> :</p>
+                                <div class="p-4 bg-slate-100 dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 space-y-2">
+                                    <p><strong>Éditeur :</strong> Haykel Laouiti</p>
+                                    <p><strong>Email :</strong> <a href="mailto:haykellaouiti@gmail.com" class="text-sky-600 font-bold underline">haykellaouiti@gmail.com</a></p>
+                                    <p><strong>Localisation :</strong> La Marsa, Tunis, Tunisie</p>
+                                </div>
+                            `
+                        }
+                    };
+                    const item = legalData[type];
+                    if (!item) return;
+                    document.getElementById('legalModalTitle').innerText = item.title;
+                    document.getElementById('legalModalBody').innerHTML = item.body;
+                    document.getElementById('legalModal').classList.remove('hidden');
+                },
+
+                closeLegalModal() {
+                    document.getElementById('legalModal').classList.add('hidden');
                 },
 
                 checkSpeedRadar(speed) {
